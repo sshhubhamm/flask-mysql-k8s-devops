@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Saved Records</title>
+</head>
+<body>
+    <h2>Saved Records</h2>
+    <table border="1" cellpadding="5">
+        <tr><th>ID</th><th>Name</th><th>Email</th></tr>
+        {% for row in records %}
+        <tr>
+            <td>{{ row[0] }}</td>
+            <td>{{ row[1] }}</td>
+            <td>{{ row[2] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <a href="/">Add More</a>
+</body>
+</html>
