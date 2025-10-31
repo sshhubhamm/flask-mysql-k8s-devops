@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
         - name: flask
-          image: flask-app:latest
-          imagePullPolicy: Never
+          image: my-flask-app:latest   # ✅ Use your actual image name
+          imagePullPolicy: Never       # ✅ Tell K8s not to pull from registry
           ports:
             - containerPort: 5000
 ---

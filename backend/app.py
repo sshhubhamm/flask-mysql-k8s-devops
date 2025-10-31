@@ -1,38 +1,33 @@
-from flask import Flask, jsonify, request
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import mysql.connector
-import os
 
 app = Flask(__name__)
+CORS(app)  # Enables CORS for all routes — allows frontend to access backend
 
-DB_CONFIG = {
-    'host': os.getenv('DB_HOST','localhost'),
-    'user': os.getenv('DB_USER','root'),
-    'password': os.getenv('DB_PASS','rootpassword'),
-    'database': os.getenv('DB_NAME','flaskdb')
-}
+# ---------- Database Connection ----------
+db = mysql.connector.connect(
+    host="mysql",       # This matches your MySQL Service name in Kubernetes
+    user="root",
+    password="root",
+    database="flaskdb"
+)
+cursor = db.cursor(dictionary=True)
 
-def get_conn():
-    return mysql.connector.connect(**DB_CONFIG)
-
+# ---------- API Routes ----------
 @app.route('/api/users', methods=['GET'])
 def get_users():
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT id, name, email FROM users")
-    rows = [{'id':r[0],'name':r[1],'email':r[2]} for r in cur.fetchall()]
-    cur.close(); conn.close()
-    return jsonify(rows)
+    cursor.execute("SELECT * FROM users")
+    users = cursor.fetchall()
+    return jsonify(users)
 
 @app.route('/api/users', methods=['POST'])
 def add_user():
-    data = request.json
-    name = data.get('name'); email = data.get('email')
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("INSERT INTO users (name,email) VALUES (%s,%s)", (name,email))
-    conn.commit()
-    cur.close(); conn.close()
-    return jsonify({'status':'ok'}), 201
+    data = request.get_json()
+    cursor.execute("INSERT INTO users (name, email) VALUES (%s, %s)", (data['name'], data['email']))
+    db.commit()
+    return jsonify({'message': 'User added successfully'})
+# --------------------------------
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
