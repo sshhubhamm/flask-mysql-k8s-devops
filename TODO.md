@@ -1,0 +1,4 @@
+- [x] Update docker-compose.yml to include backend and frontend services
+- [x] Modify frontend/Dockerfile to set REACT_APP_API environment variable for backend communication
+- [ ] Run docker-compose up to start all services (attempted, but build failed due to Docker registry network issues)
+- [ ] Verify UI accessibility (cannot verify due to build failure)
