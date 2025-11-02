@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import axios from 'axios';
 import './App.css';
 
@@ -7,15 +7,14 @@ function App(){
   const [form,setForm]=useState({name:'',email:''});
   const API = process.env.REACT_APP_API || 'http://localhost:5000/api';
 
-
-  useEffect(()=>{ fetchUsers() },[]);
-
-  async function fetchUsers(){
+  const fetchUsers = useCallback(async () => {
     try{
       const res = await axios.get(`${API}/users`);
       setUsers(res.data);
     }catch(e){ console.error(e); }
-  }
+  }, [API]);
+
+  useEffect(()=>{ fetchUsers() },[fetchUsers]);
 
   async function submit(e){
     e.preventDefault();

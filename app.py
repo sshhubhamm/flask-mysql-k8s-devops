@@ -1,35 +1,34 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import mysql.connector
+import os
 
 app = Flask(__name__)
+CORS(app)
 
-# MySQL Connection Config
+# ---------- Database Connection ----------
 db = mysql.connector.connect(
-    host="mysql",
-    user="root",
-    password="rootpassword",
-    database="flaskdb"
+    host=os.environ.get("MYSQL_HOST", "localhost"),
+    user=os.environ.get("MYSQL_USER", "root"),
+    password=os.environ.get("MYSQL_PASSWORD", "root"),
+    database=os.environ.get("MYSQL_DB", "flaskdb")
 )
+cursor = db.cursor(dictionary=True)
 
-@app.route('/')
-def home():
-    return render_template('index.html')
-
-@app.route('/add', methods=['POST'])
-def add_record():
-    name = request.form['name']
-    email = request.form['email']
-    cursor = db.cursor()
-    cursor.execute("INSERT INTO users (name, email) VALUES (%s, %s)", (name, email))
-    db.commit()
-    return redirect('/records')
-
-@app.route('/records')
-def show_records():
-    cursor = db.cursor()
+# ---------- API Routes ----------
+@app.route('/api/users', methods=['GET'])
+def get_users():
     cursor.execute("SELECT * FROM users")
-    data = cursor.fetchall()
-    return render_template('records.html', records=data)
+    users = cursor.fetchall()
+    return jsonify(users)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+@app.route('/api/users', methods=['POST'])
+def add_user():
+    data = request.get_json()
+    cursor.execute("INSERT INTO users (name, email) VALUES (%s, %s)", (data['name'], data['email']))
+    db.commit()
+    return jsonify({'message': 'User added successfully'})
+
+# --------------------------------
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
